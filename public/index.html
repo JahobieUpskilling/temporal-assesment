@@ -3,31 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Temporal assessment starter</title>
+    <title>Juniper Salon · Waitlist openings</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <main>
-      <p class="eyebrow">Temporal assessment starter</p>
-      <h1>Your environment is connected.</h1>
+    <header>
+      <p class="eyebrow">Juniper Salon · powered by Temporal</p>
+      <h1>Fill last-minute openings</h1>
       <p class="intro">
-        This neutral demonstration starts a Workflow, waits durably for a
-        Signal, and then completes. Replace it with the experience your
-        customer needs.
+        When an appointment cancels, enter the opening. Clients on the waitlist who fit are offered it
+        one at a time, in the order they joined, each with a reply window. The first YES wins; everyone
+        else is told it's filled. Square is never touched — staff book the winner by hand.
       </p>
-      <section class="card">
-        <h2 id="phase">Ready</h2>
-        <p id="message">Start the demonstration to verify the setup.</p>
-        <button id="start">Start demo Workflow</button>
-        <button id="continue" hidden>Send continue Signal</button>
-        <p class="request-id" id="request-id"></p>
+    </header>
+
+    <main>
+      <section class="column staff">
+        <h2>Staff</h2>
+        <form id="new-opening" class="card" data-testid="new-opening-form">
+          <h3>New opening (a cancellation just came in)</h3>
+          <div class="grid">
+            <label>Stylist <select name="stylist" id="stylist" data-testid="stylist"></select></label>
+            <label>Starts at
+              <input type="datetime-local" name="startsAt" id="startsAt" data-testid="startsAt" required />
+            </label>
+            <label>Length (min)
+              <input type="number" name="lengthMinutes" value="45" min="15" step="5" data-testid="lengthMinutes" />
+            </label>
+            <label>Reply window (sec)
+              <input type="number" name="replyWindowSeconds" id="replyWindow" value="900" min="2" data-testid="replyWindowSeconds" />
+            </label>
+            <label>Stop offering (min before)
+              <input type="number" name="stopOfferingMinutesBefore" value="30" min="0" data-testid="stopOfferingMinutesBefore" />
+            </label>
+            <label class="check">
+              <input type="checkbox" name="simulateTextFailure" data-testid="simulateTextFailure" />
+              Simulate SMS outage on first text
+            </label>
+          </div>
+          <div class="actions">
+            <button type="submit" data-testid="start-offering">Start offering</button>
+            <button type="button" class="ghost" id="demo-window">Demo: 20-second window</button>
+          </div>
+        </form>
+        <div id="openings" data-testid="openings"></div>
       </section>
-      <p class="footer">
-        Inspect the execution at
-        <a href="http://localhost:8233" target="_blank">localhost:8233</a>.
-      </p>
+
+      <section class="column client">
+        <h2>Client phone <span class="muted">(simulated SMS)</span></h2>
+        <div class="card phone">
+          <label>I am <select id="client-select" data-testid="client-select"></select></label>
+          <div id="inbox" class="inbox" data-testid="inbox"></div>
+          <div class="actions">
+            <button id="reply-yes" data-testid="reply-yes">Reply YES</button>
+            <button id="reply-no" class="ghost" data-testid="reply-no">Reply NO</button>
+          </div>
+          <p id="reply-result" class="reply-result" data-testid="reply-result"></p>
+        </div>
+        <div class="card">
+          <h3>Waitlist (from the spreadsheet)</h3>
+          <table id="waitlist"></table>
+        </div>
+      </section>
     </main>
+
+    <p class="footer">
+      Every opening is a Workflow. Inspect it at
+      <a href="http://localhost:8233" target="_blank">localhost:8233</a>.
+    </p>
     <script src="/app.js"></script>
   </body>
 </html>
-

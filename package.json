@@ -10,9 +10,13 @@
     "start:temporal": "docker compose up -d temporal",
     "stop": "docker compose down",
     "test": "tsx --test tests/workflow.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:all": "npm test && npm run test:e2e"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@temporalio/activity": "1.24.0",
     "@temporalio/client": "1.24.0",
@@ -21,6 +25,7 @@
     "express": "5.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@temporalio/testing": "1.24.0",
     "@types/express": "5.0.6",
     "@types/node": "22.20.4",
