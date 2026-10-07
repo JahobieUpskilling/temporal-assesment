@@ -40,6 +40,8 @@ function fakeActivities(sent: string[]): typeof activities {
       return { at: "now", to: input.to, kind: input.kind, text: input.text };
     },
     notifyStaff: async (text) => ({ at: "now", to: "staff", kind: "staff", text }),
+    claimClient: async () => true,
+    releaseClient: async () => undefined,
   };
 }
 
@@ -75,13 +77,16 @@ test("offers one at a time; first YES wins; later YES is refused", async () => {
     });
     assert.equal(early.ok, false);
 
+    let status: OpeningStatus;
+    do {
+      status = await handle.query(getOpeningStatus);
+    } while (status.currentOffer?.clientId !== "c1");
     const declined = await handle.executeUpdate(clientReply, {
       args: [{ clientId: "c1", accepted: false }],
     });
     assert.equal(declined.ok, true);
 
     // Wait until the Workflow has moved on to client 2.
-    let status: OpeningStatus;
     do {
       status = await handle.query(getOpeningStatus);
     } while (status.currentOffer?.clientId !== "c2");

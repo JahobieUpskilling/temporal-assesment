@@ -32,7 +32,8 @@ export type OfferOutcome =
   | "declined"
   | "timed_out"
   | "skipped"
-  | "withdrawn";
+  | "withdrawn"
+  | "busy";
 
 export type OfferRecord = {
   clientId: string;

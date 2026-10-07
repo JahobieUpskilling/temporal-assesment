@@ -41,6 +41,7 @@ const OUTCOME_LABEL = {
   timed_out: "no reply (timed out)",
   skipped: "skipped by staff",
   withdrawn: "withdrawn",
+  busy: "holding another offer / already booked",
 };
 
 function renderOpening(o) {

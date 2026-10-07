@@ -17,7 +17,7 @@ import type {
   WaitlistClient,
 } from "./types";
 
-const { findEligibleClients, sendText, notifyStaff } = proxyActivities<typeof activities>({
+const { findEligibleClients, sendText, notifyStaff, claimClient, releaseClient } = proxyActivities<typeof activities>({
   startToCloseTimeout: "10 seconds",
   retry: { initialInterval: "1 second", backoffCoefficient: 2, maximumAttempts: 5 },
 });
@@ -109,6 +109,17 @@ export async function openingWorkflow(opening: OpeningInput): Promise<OpeningSta
     }
 
     status.stillWaiting = status.stillWaiting.filter((c) => c.id !== client.id);
+    // One offer per client at a time across all openings.
+    if (!(await claimClient({ clientId: client.id, openingId: status.openingId }))) {
+      status.offers.push({
+        clientId: client.id,
+        clientName: client.name,
+        offeredAt: new Date(now).toISOString(),
+        expiresAt: new Date(now).toISOString(),
+        outcome: "busy",
+      });
+      continue;
+    }
     const offer: OfferRecord = {
       clientId: client.id,
       clientName: client.name,
@@ -141,6 +152,7 @@ export async function openingWorkflow(opening: OpeningInput): Promise<OpeningSta
     // narrowing can't see.
     const reply = pendingReply as ReplyInput | undefined;
     offer.respondedAt = new Date().toISOString();
+    await releaseClient({ clientId: client.id, openingId: status.openingId, accepted: reply?.accepted === true && !cancelReason });
     if (cancelReason) {
       offer.outcome = "withdrawn";
       status.messages.push(

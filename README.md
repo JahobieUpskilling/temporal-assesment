@@ -52,6 +52,7 @@ npm install && npm run dev
 | Stop when too close to the appointment | `stopOfferingMinutesBefore` (default 30; Lena hasn't set a cutoff) |
 | Tell staff if unfilled; tell others when filled | `notifyStaff` and "it's filled" texts |
 | Don't touch Square | Nothing writes to Square; the winner's original booking is moved by staff |
+| Several openings at once | A client holds at most one offer at a time (`claimClient`/`releaseClient` Activities); once they accept an opening they are no longer eligible for others (shown as "holding another offer / already booked") |
 
 ## Simulated or excluded
 
