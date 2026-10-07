@@ -72,3 +72,5 @@ export const WAITLIST: WaitlistClient[] = [
 ];
 
 export const STYLISTS = ["Lena", "Carla"];
+
+export const SERVICES = ["Cut", "Trim", "Colour", "Blowout"];

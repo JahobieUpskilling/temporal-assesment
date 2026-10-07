@@ -9,6 +9,7 @@ export async function findEligibleClients(opening: OpeningInput): Promise<Waitli
   const clock = localClock(opening.startsAt);
   return WAITLIST.filter(
     (client) =>
+      (opening.service === null || client.service === opening.service) &&
       client.serviceMinutes <= opening.lengthMinutes &&
       (client.preferredStylist === null || client.preferredStylist === opening.stylist) &&
       client.availableFrom <= clock &&

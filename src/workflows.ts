@@ -189,7 +189,7 @@ export async function openingWorkflow(opening: OpeningInput): Promise<OpeningSta
       phase as "filled" | "unfilled" | "cancelled"
     ];
     s.messages.push(
-      await notifyStaff(`${prefix}: ${opening.stylist} ${opening.startsAt} — ${reason}`),
+      await notifyStaff(`${prefix}: ${opening.stylist} ${opening.startsAtLabel} — ${reason}`),
     );
     return s;
   }
@@ -219,7 +219,7 @@ function offerText(client: WaitlistClient, opening: OpeningInput, windowMs: numb
   const minutes = Math.max(1, Math.round(windowMs / 60_000));
   return (
     `Juniper Salon: hi ${client.name.split(" ")[0]}, a ${opening.lengthMinutes}-minute opening ` +
-    `with ${opening.stylist} just came up at ${opening.startsAt}. Reply YES to take it or NO to pass. ` +
+    `with ${opening.stylist} just came up at ${opening.startsAtLabel}. Reply YES to take it or NO to pass. ` +
     `It's yours for the next ${minutes} min, then we'll offer it to the next person.`
   );
 }

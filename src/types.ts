@@ -17,7 +17,9 @@ export type WaitlistClient = {
 // for appointments; staff enter the opening here by hand.
 export type OpeningInput = {
   stylist: string;
+  service: string | null; // null = any service that fits the gap
   startsAt: string; // ISO timestamp of the opening
+  startsAtLabel: string; // human-readable local time, used in client texts
   lengthMinutes: number;
   replyWindowSeconds: number; // Lena: 15 minutes per person
   stopOfferingMinutesBefore: number; // Lena: "too close to be useful", no exact cutoff yet

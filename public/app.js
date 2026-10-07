@@ -1,4 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
+const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+let lastRendered = "";
 const form = $("#new-opening");
 const openingsEl = $("#openings");
 const clientSelect = $("#client-select");
@@ -10,6 +12,7 @@ let openings = [];
 // The opening the client phone replies to: the newest one that is still open,
 // or the one the staff picked with "Reply as client".
 let selectedOpeningId = localStorage.getItem("selectedOpeningId");
+let selectedAt = 0;
 
 async function api(path, options) {
   const response = await fetch(path, {
@@ -48,15 +51,15 @@ function renderOpening(o) {
     <div class="opening-head">
       <div>
         <span class="badge ${o.phase}" data-testid="phase">${o.phase}</span>
-        <strong>${o.opening.stylist}</strong> · ${fmtTime(o.opening.startsAt)} · ${o.opening.lengthMinutes} min
+        <strong>${esc(o.opening.stylist)}</strong> · ${fmtTime(o.opening.startsAt)} · ${o.opening.lengthMinutes} min${o.opening.service ? ` · ${esc(o.opening.service)}` : ""}
       </div>
       <code class="muted">${o.openingId}</code>
     </div>
-    <p class="reason" data-testid="reason">${o.reason}</p>
+    <p class="reason" data-testid="reason">${esc(o.reason)}</p>
     ${
       current
         ? `<div class="current" data-testid="current-offer">
-            <strong>${current.clientName}</strong> has the offer ·
+            <strong>${esc(current.clientName)}</strong> has the offer ·
             <span class="countdown" data-expires="${current.expiresAt}" data-testid="countdown">${secondsLeft(
               current.expiresAt,
             )}s</span> left
@@ -66,7 +69,7 @@ function renderOpening(o) {
     ${
       o.acceptedBy
         ? `<div class="accepted" data-testid="accepted-by">
-            <strong>${o.acceptedBy.name}</strong> (${o.acceptedBy.phone}) takes it for a ${o.acceptedBy.service}.
+            <strong>${esc(o.acceptedBy.name)}</strong> (${esc(o.acceptedBy.phone)}) takes it for a ${esc(o.acceptedBy.service)}.
             <br /><em>Next: book it in Square and move their original appointment. Decide whether they stay on the waitlist.</em>
           </div>`
         : ""
@@ -78,7 +81,7 @@ function renderOpening(o) {
           ${o.offers
             .map(
               (f) =>
-                `<li class="outcome-${f.outcome}"><span>${f.clientName}</span> <small>${OUTCOME_LABEL[f.outcome]}</small></li>`,
+                `<li class="outcome-${f.outcome}"><span>${esc(f.clientName)}</span> <small>${OUTCOME_LABEL[f.outcome]}</small></li>`,
             )
             .join("") || "<li class='muted'>nobody yet</li>"}
         </ol>
@@ -86,14 +89,14 @@ function renderOpening(o) {
       <div>
         <h4>Still waiting</h4>
         <ul data-testid="still-waiting">
-          ${o.stillWaiting.map((c) => `<li>${c.name}</li>`).join("") || "<li class='muted'>none</li>"}
+          ${o.stillWaiting.map((c) => `<li>${esc(c.name)}</li>`).join("") || "<li class='muted'>none</li>"}
         </ul>
       </div>
       <div>
         <h4>Late / invalid replies</h4>
         <ul data-testid="late-replies">
           ${o.lateReplies
-            .map((r) => `<li>${r.clientName} said ${r.accepted ? "YES" : "NO"} → <small>${r.result}</small></li>`)
+            .map((r) => `<li>${esc(r.clientName)} said ${r.accepted ? "YES" : "NO"} → <small>${esc(r.result)}</small></li>`)
             .join("") || "<li class='muted'>none</li>"}
         </ul>
       </div>
@@ -101,7 +104,7 @@ function renderOpening(o) {
     <details>
       <summary>Messages sent (${o.messages.length})</summary>
       <ul class="messages" data-testid="messages">
-        ${o.messages.map((m) => `<li><small>${fmtTime(m.at)} → ${m.to}</small><br />${m.text}</li>`).join("")}
+        ${o.messages.map((m) => `<li><small>${fmtTime(m.at)} → ${esc(m.to)}</small><br />${esc(m.text)}</li>`).join("")}
       </ul>
     </details>
     <div class="actions">
@@ -126,14 +129,25 @@ function renderInbox() {
   const texts = opening.messages.filter((m) => m.to === client.phone);
   inbox.innerHTML =
     `<p class="muted">Replying to <code>${opening.openingId}</code></p>` +
-    (texts.map((m) => `<div class="bubble" data-testid="sms">${m.text}</div>`).join("") ||
+    (texts.map((m) => `<div class="bubble" data-testid="sms">${esc(m.text)}</div>`).join("") ||
       `<p class="muted">No texts yet for ${client.name}.</p>`);
 }
 
 function render() {
+  // Re-render only when something changed, so open <details> etc. stay put.
+  const snapshot = JSON.stringify([openings, selectedOpeningId, clientSelect.value]);
+  if (snapshot === lastRendered) return;
+  lastRendered = snapshot;
+  const openDetails = new Set(
+    [...openingsEl.querySelectorAll("details[open]")].map((d) => d.closest("[data-opening-id]")?.dataset.openingId),
+  );
   openingsEl.innerHTML =
     openings.map(renderOpening).join("") ||
     `<p class="muted card">No openings yet. Enter one above when a cancellation comes in.</p>`;
+  for (const id of openDetails) {
+    const details = openingsEl.querySelector(`[data-opening-id="${id}"] details`);
+    if (details) details.open = true;
+  }
   renderInbox();
 }
 
@@ -141,6 +155,10 @@ async function refresh() {
   openings = await api("/api/openings");
   // Only pick a default when nothing is selected. A just-started opening can
   // take a moment to show up in the list, so never override an explicit choice.
+  // A stale selection from a previous session (not in the list, and not just created) is dropped.
+  if (selectedOpeningId && !openings.some((o) => o.openingId === selectedOpeningId) && Date.now() - selectedAt > 10_000) {
+    selectedOpeningId = null;
+  }
   if (!selectedOpeningId) {
     selectedOpeningId = openings.find((o) => o.phase === "offering" || o.phase === "matching")?.openingId ?? null;
   }
@@ -158,6 +176,7 @@ form.addEventListener("submit", async (event) => {
   const data = Object.fromEntries(new FormData(form));
   const body = {
     stylist: data.stylist,
+    service: data.service || null,
     startsAt: new Date(data.startsAt).toISOString(),
     lengthMinutes: Number(data.lengthMinutes),
     replyWindowSeconds: Number(data.replyWindowSeconds),
@@ -166,6 +185,7 @@ form.addEventListener("submit", async (event) => {
   };
   const { openingId } = await api("/api/openings", { method: "POST", body: JSON.stringify(body) });
   selectedOpeningId = openingId;
+  selectedAt = Date.now();
   localStorage.setItem("selectedOpeningId", openingId);
   replyResult.textContent = "";
   await refresh();
@@ -181,6 +201,7 @@ openingsEl.addEventListener("click", async (event) => {
   const openingId = button.closest("[data-opening-id]").dataset.openingId;
   if (button.dataset.action === "select") {
     selectedOpeningId = openingId;
+    selectedAt = Date.now();
     localStorage.setItem("selectedOpeningId", openingId);
     render();
     return;
@@ -220,9 +241,11 @@ function showError(error) {
 
 async function init() {
   waitlist = await api("/api/waitlist");
-  $("#stylist").innerHTML = waitlist.stylists.map((s) => `<option>${s}</option>`).join("");
+  $("#stylist").innerHTML = waitlist.stylists.map((s) => `<option>${esc(s)}</option>`).join("");
+  $("#service").innerHTML =
+    `<option value="">Any that fits</option>` + waitlist.services.map((s) => `<option>${esc(s)}</option>`).join("");
   clientSelect.innerHTML = waitlist.clients
-    .map((c) => `<option value="${c.id}">${c.name} (${c.phone})</option>`)
+    .map((c) => `<option value="${esc(c.id)}">${esc(c.name)} (${esc(c.phone)})</option>`)
     .join("");
   $("#waitlist").innerHTML =
     `<tr><th>Joined</th><th>Name</th><th>Service</th><th>Stylist</th><th>Available</th></tr>` +

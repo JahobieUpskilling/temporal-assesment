@@ -22,7 +22,9 @@ const clients: WaitlistClient[] = ["c1", "c2", "c3"].map((id, i) => ({
 
 const opening: OpeningInput = {
   stylist: "Lena",
+  service: null,
   startsAt: "2030-01-01T14:00:00.000Z",
+  startsAtLabel: "Jan 1, 2030, 2:00 PM",
   lengthMinutes: 45,
   replyWindowSeconds: 15 * 60,
   stopOfferingMinutesBefore: 30,

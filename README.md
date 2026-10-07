@@ -43,7 +43,7 @@ npm install && npm run dev
 
 | Lena's need | Prototype behaviour |
 | --- | --- |
-| Match by service, length, availability, requested stylist | `findEligibleClients` Activity filters the waitlist, ordered by join date |
+| Match by service, length, availability, requested stylist | `findEligibleClients` Activity filters the waitlist (service if staff pick one, service length fits the gap, client available at the start time, stylist preference), ordered by join date |
 | Stop texting several people at once; one winner | One offer at a time; replies are a Temporal **Update** so only the current holder's YES can win |
 | 15-minute reply window, then move on | `condition(..., replyWindow)` timer per client; configurable per opening |
 | Late replies shouldn't take the slot | Refused with a clear message; logged under *Late / invalid replies* |

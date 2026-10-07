@@ -7,27 +7,27 @@
   @page { size: 1280px 720px; margin: 0; }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: Inter, "Helvetica Neue", Arial, sans-serif; color: #222c29; }
-  .slide { width: 1280px; height: 720px; padding: 64px 80px; page-break-after: always; background: #f3f0e9; display: flex; flex-direction: column; position: relative; }
+  .slide { width: 1280px; height: 720px; padding: 40px 64px 56px; page-break-after: always; background: #f3f0e9; display: flex; flex-direction: column; position: relative; }
   .slide:last-child { page-break-after: auto; }
   .eyebrow { color: #47685d; font-size: 15px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 10px; }
-  h1 { font-family: Georgia, serif; font-weight: 500; font-size: 54px; line-height: 1.05; margin: 0 0 28px; }
-  h2 { font-family: Georgia, serif; font-weight: 500; font-size: 42px; line-height: 1.1; margin: 0 0 24px; }
-  p, li { font-size: 22px; line-height: 1.45; }
+  h1 { font-family: Georgia, serif; font-weight: 500; font-size: 42px; line-height: 1.05; margin: 0 0 16px; }
+  h2 { font-family: Georgia, serif; font-weight: 500; font-size: 34px; line-height: 1.1; margin: 0 0 14px; }
+  p, li { font-size: 17px; line-height: 1.4; }
   ul { margin: 0; padding-left: 26px; }
-  li + li { margin-top: 8px; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex: 1; }
-  .card { background: #fffdf8; border: 1px solid #d5cfc2; border-radius: 16px; padding: 24px 28px; }
-  .card h3 { margin: 0 0 10px; font-size: 20px; text-transform: uppercase; letter-spacing: 0.08em; color: #5c6662; }
-  .big { font-size: 30px; line-height: 1.35; max-width: 1000px; }
-  .flow { display: flex; align-items: stretch; gap: 14px; margin: 10px 0 26px; }
-  .step { flex: 1; background: #fffdf8; border: 1px solid #d5cfc2; border-radius: 14px; padding: 18px; font-size: 19px; line-height: 1.35; }
+  li + li { margin-top: 5px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .card { background: #fffdf8; border: 1px solid #d5cfc2; border-radius: 16px; padding: 16px 20px; }
+  .card h3 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; color: #5c6662; }
+  .big { font-size: 21px; line-height: 1.35; max-width: 1100px; margin: 0 0 12px; }
+  .flow { display: flex; align-items: stretch; gap: 10px; margin: 4px 0 16px; }
+  .step { flex: 1; background: #fffdf8; border: 1px solid #d5cfc2; border-radius: 14px; padding: 12px 14px; font-size: 15px; line-height: 1.35; }
   .step b { display: block; font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; color: #47685d; margin-bottom: 6px; }
   .arrow { align-self: center; font-size: 28px; color: #8a9790; }
-  .foot { position: absolute; bottom: 36px; left: 80px; right: 80px; display: flex; justify-content: space-between; color: #737975; font-size: 15px; }
+  .foot { position: absolute; bottom: 22px; left: 80px; right: 80px; display: flex; justify-content: space-between; color: #737975; font-size: 15px; }
   .pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 16px; font-weight: 700; background: #e8e3d8; margin-right: 8px; }
   .pill.g { background: #b7e2c4; } .pill.y { background: #f3d77a; } .pill.r { background: #f0c2b8; }
-  table { border-collapse: collapse; width: 100%; font-size: 19px; }
-  td, th { text-align: left; padding: 9px 10px; border-bottom: 1px solid #e0dacd; vertical-align: top; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  td, th { text-align: left; padding: 7px 8px; border-bottom: 1px solid #e0dacd; vertical-align: top; }
   th { color: #5c6662; font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; }
 </style>
 </head>
@@ -37,7 +37,7 @@
   <p class="eyebrow">Juniper Salon · Prototype review</p>
   <h1>Filling last-minute openings<br/>without the group-text scramble</h1>
   <p class="big">Today a cancellation means Lena or Carla scan the Google Sheet, text several people from the salon phone, and try to remember who answered. Chairs stay empty during busy stretches, two people say yes to the same slot, and late replies cause confusion.</p>
-  <div class="cols" style="flex:0; margin-top: 18px;">
+  <div class="cols">
     <div class="card"><h3>What hurts</h3><ul>
       <li>Losing track of who was contacted and who declined</li>
       <li>Forgetting to text the next person when it's busy</li>
@@ -60,7 +60,7 @@
   <div class="flow">
     <div class="step"><b>1 · Cancellation</b>Staff enter the opening: stylist, time, length. Square isn't touched.</div>
     <div class="arrow">→</div>
-    <div class="step"><b>2 · Match</b>Waitlist filtered by service length, availability and requested stylist, in the order they joined.</div>
+    <div class="step"><b>2 · Match</b>Waitlist filtered by service (and its length fitting the gap), availability and requested stylist, in the order they joined.</div>
     <div class="arrow">→</div>
     <div class="step"><b>3 · Offer</b>First person is texted. They get 15 minutes (configurable) to reply YES or NO.</div>
     <div class="arrow">→</div>
@@ -88,7 +88,7 @@
   <h2>Scope of this prototype</h2>
   <table>
     <tr><th style="width:22%">Area</th><th style="width:18%">Status</th><th>Notes</th></tr>
-    <tr><td>Offer sequencing, timers, one winner, staff skip/cancel, status view</td><td><span class="pill g">Working</span></td><td>Covered by Workflow tests (time-skipping) and browser end-to-end tests: accept, expiry → next offer, stale and duplicate replies, queue-jumping, skip, cancel, reload mid-offer, worker restart mid-offer.</td></tr>
+    <tr><td>Offer sequencing, timers, one winner, staff skip/cancel, status view</td><td><span class="pill g">Working</span></td><td>Covered by Workflow tests (time-skipping) and browser end-to-end tests: accept, expiry → next offer, stale and duplicate replies, queue-jumping, skip, cancel, reload mid-offer. Worker restart mid-offer was checked manually (see evidence/).</td></tr>
     <tr><td>Text messages</td><td><span class="pill y">Simulated</span></td><td>Texts are logged and shown on a simulated "client phone". Client replies are a button in the demo; in production an SMS webhook maps the phone number to the reply.</td></tr>
     <tr><td>Waitlist data</td><td><span class="pill y">Simulated</span></td><td>A hard-coded copy of the spreadsheet (six clients). Reading the live Google Sheet is a small Activity change.</td></tr>
     <tr><td>Square</td><td><span class="pill r">Excluded</span></td><td>At Lena's request. The app never reads or writes Square; staff book the winner and move their original appointment manually.</td></tr>
@@ -115,7 +115,7 @@
       <li>How often staff skip or cancel, to tune the reply window and the "too close" cutoff</li>
     </ul></div>
   </div>
-  <p class="big" style="margin-top: 26px;">Decisions needed from Lena: the "too close to the appointment" cutoff, and whether an accepted client stays on the waitlist.</p>
+  <p class="big" style="margin-top: 16px;">Decisions needed from Lena: the "too close to the appointment" cutoff, and whether an accepted client stays on the waitlist.</p>
   <div class="foot"><span>4 · Practical next step</span><span>Code, tests and run instructions: github.com/JahobieUpskilling/temporal-assesment</span></div>
 </section>
 

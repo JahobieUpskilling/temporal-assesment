@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-import { Client, Connection } from "@temporalio/client";
+import { Client, Connection, WorkflowNotFoundError } from "@temporalio/client";
 import express, { type NextFunction, type Request, type Response } from "express";
 import type { OpeningInput, OpeningStatus, ReplyResult } from "./types";
-import { STYLISTS, WAITLIST } from "./waitlist";
+import { SERVICES, STYLISTS, WAITLIST } from "./waitlist";
 import {
   cancelOpening,
   clientReply,
@@ -30,24 +30,38 @@ function getClient(): Promise<Client> {
 // The simulated spreadsheet, so the page can show who is on the waitlist and
 // let the demo "be" each client when replying.
 app.get("/api/waitlist", (_request, response) => {
-  response.json({ stylists: STYLISTS, clients: WAITLIST });
+  response.json({ stylists: STYLISTS, services: SERVICES, clients: WAITLIST });
 });
 
 // Staff: a cancellation came in, start offering the opening.
 app.post("/api/openings", async (request, response) => {
   const body = request.body ?? {};
-  const opening: OpeningInput = {
-    stylist: String(body.stylist ?? STYLISTS[0]),
-    startsAt: String(body.startsAt),
-    lengthMinutes: Number(body.lengthMinutes ?? 45),
-    replyWindowSeconds: Number(body.replyWindowSeconds ?? 15 * 60),
-    stopOfferingMinutesBefore: Number(body.stopOfferingMinutesBefore ?? 30),
-    simulateTextFailure: Boolean(body.simulateTextFailure),
-  };
-  if (Number.isNaN(new Date(opening.startsAt).getTime())) {
+  const startsAt = new Date(String(body.startsAt));
+  if (Number.isNaN(startsAt.getTime())) {
     response.status(400).json({ error: "startsAt must be a valid date-time" });
     return;
   }
+  const num = (value: unknown, fallback: number, min: number): number | undefined => {
+    const n = value === undefined || value === "" ? fallback : Number(value);
+    return Number.isFinite(n) && n >= min ? n : undefined;
+  };
+  const lengthMinutes = num(body.lengthMinutes, 45, 5);
+  const replyWindowSeconds = num(body.replyWindowSeconds, 15 * 60, 1);
+  const stopOfferingMinutesBefore = num(body.stopOfferingMinutesBefore, 30, 0);
+  if (lengthMinutes === undefined || replyWindowSeconds === undefined || stopOfferingMinutesBefore === undefined) {
+    response.status(400).json({ error: "lengthMinutes, replyWindowSeconds and stopOfferingMinutesBefore must be non-negative numbers" });
+    return;
+  }
+  const opening: OpeningInput = {
+    stylist: String(body.stylist ?? STYLISTS[0]),
+    service: body.service ? String(body.service) : null,
+    startsAt: startsAt.toISOString(),
+    startsAtLabel: startsAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }),
+    lengthMinutes,
+    replyWindowSeconds,
+    stopOfferingMinutesBefore,
+    simulateTextFailure: Boolean(body.simulateTextFailure),
+  };
   const openingId = `opening-${randomUUID().slice(0, 8)}`;
   const client = await getClient();
   await client.workflow.start(openingWorkflow, {
@@ -125,6 +139,20 @@ app.post("/api/openings/:openingId/cancel", async (request, response) => {
 
 app.use(
   (error: unknown, _request: Request, response: Response, _next: NextFunction) => {
+    const message = error instanceof Error ? error.message : "";
+    // Routine client/staff mistakes get a 4xx, not a stack trace.
+    if (error instanceof SyntaxError) {
+      response.status(400).json({ error: "Request body must be valid JSON" });
+      return;
+    }
+    if (error instanceof WorkflowNotFoundError || /not found/i.test(message)) {
+      response.status(404).json({ error: "No such opening" });
+      return;
+    }
+    if (/already completed/i.test(message)) {
+      response.status(409).json({ error: "This opening has already finished" });
+      return;
+    }
     console.error(error);
     response.status(500).json({
       error: error instanceof Error ? error.message : "Unexpected error",
