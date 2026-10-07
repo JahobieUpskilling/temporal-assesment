@@ -36,7 +36,11 @@ npm install && npm run dev
    Square by hand.
 5. Start another opening and use **Skip current** or **Cancel opening** to see
    the staff controls.
-6. Tick **Simulate SMS outage** before starting: the first text fails and
+6. Start two openings at once: the second one skips anyone already holding an
+   offer ("holding another offer / already booked"), and a client who accepts
+   one opening is no longer eligible for others. **Demo: reset clients** clears
+   those holds so the six simulated clients are all available again.
+7. Tick **Simulate SMS outage** before starting: the first text fails and
    Temporal retries it; you can see the retry in the Web UI.
 
 ## What Lena asked for → how it's handled

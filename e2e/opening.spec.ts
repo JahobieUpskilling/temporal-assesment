@@ -22,6 +22,8 @@ test.beforeEach(async ({ page }) => {
       throw new Error(`API error ${status} on ${response.request().method()} ${response.url()}`);
     }
   });
+  // Each test starts with every simulated client free to receive an offer.
+  await page.request.post("/api/holds/reset");
   await page.goto("/");
   await expect(page.getByTestId("client-select")).not.toBeEmpty();
 });

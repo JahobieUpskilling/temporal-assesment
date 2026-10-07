@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { rmSync } from "node:fs";
 import path from "node:path";
 import { Client, Connection, WorkflowNotFoundError } from "@temporalio/client";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -31,6 +32,13 @@ function getClient(): Promise<Client> {
 // let the demo "be" each client when replying.
 app.get("/api/waitlist", (_request, response) => {
   response.json({ stylists: STYLISTS, services: SERVICES, clients: WAITLIST });
+});
+
+// Demo/testing: forget who is holding or has accepted an offer, so the six
+// simulated clients become eligible again. Finished Workflows are untouched.
+app.post("/api/holds/reset", (_request, response) => {
+  rmSync(process.env.HOLDS_FILE ?? ".holds.json", { force: true });
+  response.status(204).end();
 });
 
 // Staff: a cancellation came in, start offering the opening.

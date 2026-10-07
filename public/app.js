@@ -192,6 +192,12 @@ form.addEventListener("submit", async (event) => {
   await refresh();
 });
 
+$("#reset-holds").addEventListener("click", async () => {
+  await fetch("/api/holds/reset", { method: "POST" });
+  replyResult.textContent = "All clients are eligible again.";
+  replyResult.className = "reply-result ok";
+});
+
 $("#demo-window").addEventListener("click", () => {
   $("#replyWindow").value = 20;
 });
