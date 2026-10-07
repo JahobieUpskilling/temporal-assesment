@@ -22,7 +22,11 @@ test.beforeEach(async ({ page }) => {
       throw new Error(`API error ${status} on ${response.request().method()} ${response.url()}`);
     }
   });
-  // Each test starts with every simulated client free to receive an offer.
+  // Each test starts with no live offers and every simulated client free.
+  const open = (await (await page.request.get("/api/openings")).json()) as { openingId: string; phase: string }[];
+  for (const o of open.filter((o) => o.phase === "offering" || o.phase === "matching")) {
+    await page.request.post(`/api/openings/${o.openingId}/cancel`, { data: { reason: "test reset" } });
+  }
   await page.request.post("/api/holds/reset");
   await page.goto("/");
   await expect(page.getByTestId("client-select")).not.toBeEmpty();

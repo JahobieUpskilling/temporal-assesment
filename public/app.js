@@ -120,7 +120,7 @@ function renderOpening(o) {
 
 function renderInbox() {
   const client = waitlist.clients.find((c) => c.id === clientSelect.value);
-  const opening = openings.find((o) => o.openingId === selectedOpeningId);
+  const opening = openings.find((o) => o.openingId === (client ? openingForClient(client.id) : selectedOpeningId));
   if (!client || !opening) {
     inbox.innerHTML = selectedOpeningId
       ? `<p class="muted">Loading <code>${selectedOpeningId}</code>…</p>`
@@ -223,9 +223,17 @@ openingsEl.addEventListener("click", async (event) => {
   await refresh();
 });
 
+// The opening this client's reply belongs to: the one they currently hold,
+// otherwise the selected one (so late/invalid replies still get an answer).
+function openingForClient(clientId) {
+  const held = openings.find((o) => o.phase === "offering" && o.currentOffer?.clientId === clientId);
+  return held?.openingId ?? selectedOpeningId;
+}
+
 async function reply(accepted) {
-  if (!selectedOpeningId) return;
-  const result = await api(`/api/openings/${selectedOpeningId}/reply`, {
+  const target = openingForClient(clientSelect.value);
+  if (!target) return;
+  const result = await api(`/api/openings/${target}/reply`, {
     method: "POST",
     body: JSON.stringify({ clientId: clientSelect.value, accepted }),
   });

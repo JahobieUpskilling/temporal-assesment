@@ -244,6 +244,9 @@ export function lateReplyMessage(status: OpeningStatus, reply: ReplyInput): stri
   if (status.phase === "cancelled") return "That opening is no longer available.";
   if (status.phase === "unfilled") return "That opening has closed.";
   const earlier = status.offers.find((o) => o.clientId === reply.clientId);
+  if (earlier?.outcome === "busy") {
+    return "You're already holding another opening with us; reply to that one first.";
+  }
   if (earlier && earlier.outcome !== "offered") {
     return `Sorry, your ${Math.round(
       (new Date(earlier.expiresAt).getTime() - new Date(earlier.offeredAt).getTime()) / 60_000,
